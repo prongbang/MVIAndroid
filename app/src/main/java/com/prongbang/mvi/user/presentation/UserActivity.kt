@@ -6,20 +6,15 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.prongbang.mvi.databinding.ActivityUserBinding
-import com.prongbang.mvi.user.domain.User
 import com.prongbang.mvi.user.presentation.list.UserAdapter
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-@InternalCoroutinesApi
-@ExperimentalCoroutinesApi
 class UserActivity : AppCompatActivity() {
 
 	private val viewModel: UserViewModel by viewModel()
@@ -37,7 +32,7 @@ class UserActivity : AppCompatActivity() {
 	private fun setupClicks() {
 		binding.buttonFetchUser.setOnClickListener {
 			lifecycleScope.launch {
-				viewModel.userIntent.send(UserIntent.FetchUser)
+				viewModel.intents.send(UserIntent.FetchUser)
 			}
 		}
 	}
@@ -54,36 +49,32 @@ class UserActivity : AppCompatActivity() {
 	}
 
 	private fun observeViewModel() {
-		lifecycleScope.launch {
-			viewModel.state.collect(collector = object : FlowCollector<UserState> {
-				override suspend fun emit(value: UserState) {
-					when (value) {
-						is UserState.Idle -> {
-						}
-						is UserState.Loading -> {
-							binding.buttonFetchUser.visibility = View.GONE
-							binding.progressBar.visibility = View.VISIBLE
-						}
-						is UserState.Users -> {
-							binding.progressBar.visibility = View.GONE
-							binding.buttonFetchUser.visibility = View.GONE
-							renderList(value.user)
-						}
-						is UserState.Error -> {
-							binding.progressBar.visibility = View.GONE
-							binding.buttonFetchUser.visibility = View.VISIBLE
-							Toast.makeText(this@UserActivity, value.error, Toast.LENGTH_LONG)
-									.show()
-						}
-					}
-				}
-			})
-		}
+		viewModel.state.observe(this@UserActivity, Observer {
+			render(it)
+		})
 	}
 
-	private fun renderList(users: List<User>) {
-		binding.recyclerView.visibility = View.VISIBLE
-		userAdapter.submitList(users)
+	private fun render(state: UserState) {
+		when (state) {
+			is UserState.Idle -> {
+			}
+			is UserState.Loading -> {
+				binding.buttonFetchUser.visibility = View.GONE
+				binding.progressBar.visibility = View.VISIBLE
+			}
+			is UserState.Users -> {
+				binding.progressBar.visibility = View.GONE
+				binding.buttonFetchUser.visibility = View.GONE
+				binding.recyclerView.visibility = View.VISIBLE
+				userAdapter.submitList(state.user)
+			}
+			is UserState.Error -> {
+				binding.progressBar.visibility = View.GONE
+				binding.buttonFetchUser.visibility = View.VISIBLE
+				Toast.makeText(this@UserActivity, state.error, Toast.LENGTH_LONG)
+						.show()
+			}
+		}
 	}
 
 	companion object {

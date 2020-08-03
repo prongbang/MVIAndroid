@@ -4,11 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.prongbang.mvi.databinding.ActivityMainBinding
 import com.prongbang.mvi.user.presentation.UserActivity
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.InternalCoroutinesApi
 
-@ExperimentalCoroutinesApi
-@InternalCoroutinesApi
 class MainActivity : AppCompatActivity() {
 
 	private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }

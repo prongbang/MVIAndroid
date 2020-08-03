@@ -7,13 +7,9 @@ import com.prongbang.mvi.user.data.UserRepository
 import com.prongbang.mvi.user.data.remote.ApiService
 import com.prongbang.mvi.user.data.remote.UserRemoteDataSource
 import com.prongbang.mvi.user.presentation.UserViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.InternalCoroutinesApi
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
-@InternalCoroutinesApi
-@ExperimentalCoroutinesApi
 val userModule = module {
 	single { RetrofitBuilder.create(ApiService::class.java) }
 	single<UserDataSource> { UserRemoteDataSource(get()) }

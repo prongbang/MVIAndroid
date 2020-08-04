@@ -22,7 +22,7 @@ class UserViewModel(
 	}
 
 	private fun handleIntent() {
-		viewModelScope.launch(Dispatchers.IO) {
+		viewModelScope.launch {
 			for (state in intents) {
 				when (state) {
 					is UserIntent.FetchUser -> fetchUser()
@@ -32,7 +32,7 @@ class UserViewModel(
 	}
 
 	private fun fetchUser() {
-		viewModelScope.launch() {
+		viewModelScope.launch(Dispatchers.IO) {
 			_state.postValue(UserState.Loading)
 			_state.postValue(try {
 				UserState.Users(userRepository.getUsers())

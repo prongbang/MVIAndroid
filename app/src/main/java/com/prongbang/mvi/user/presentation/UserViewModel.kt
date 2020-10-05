@@ -1,57 +1,39 @@
 package com.prongbang.mvi.user.presentation
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.prongbang.mvi.core.FlowViewModel
 import com.prongbang.mvi.user.data.UserRepository
+import com.prongbang.mvi.user.domain.UserEffect
+import com.prongbang.mvi.user.domain.UserIntent
+import com.prongbang.mvi.user.domain.UserState
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 
-@InternalCoroutinesApi
 @ExperimentalCoroutinesApi
+@InternalCoroutinesApi
 class UserViewModel(
 		private val userRepository: UserRepository
-) : ViewModel() {
+) : FlowViewModel<UserIntent, UserState, UserEffect>() {
 
-	private val _state = MutableStateFlow<UserState>(UserState.Idle)
-	val userIntent = Channel<UserIntent>(Channel.UNLIMITED)
-	val state: StateFlow<UserState> get() = _state
+	override fun initState() = UserState.Idle
+	override fun initEffect() = UserEffect.Idle
 
-	init {
-		handleIntent()
-	}
-
-	private fun handleIntent() {
-		viewModelScope.launch {
-//			userIntent.consumeEach {
-//				when (it) {
-//					is UserIntent.FetchUser -> fetchUser()
-//				}
-//			}
-			userIntent.consumeAsFlow()
-					.collect(object : FlowCollector<UserIntent> {
-						override suspend fun emit(value: UserIntent) {
-							when (value) {
-								is UserIntent.FetchUser -> fetchUser()
-							}
-						}
-					})
+	override fun onProcessIntent(intent: UserIntent) {
+		when (intent) {
+			is UserIntent.FetchUser -> processFetchUser()
 		}
 	}
 
-	private fun fetchUser() {
-		viewModelScope.launch {
-			_state.value = UserState.Loading
-			_state.value = try {
-				UserState.Users(userRepository.getUsers())
-			} catch (e: Exception) {
-				UserState.Error(e.localizedMessage)
-			}
+	private fun processFetchUser() {
+		val handler = CoroutineExceptionHandler { _, exception ->
+			effect.value = UserEffect.Error(exception.message)
+		}
+		viewModelScope.launch(handler) {
+			state.value = UserState.Loading
+			state.value = UserState.Users(userRepository.getUsers())
 		}
 	}
 }

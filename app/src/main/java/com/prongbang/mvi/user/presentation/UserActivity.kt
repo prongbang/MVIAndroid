@@ -14,12 +14,8 @@ import com.prongbang.mvi.user.domain.UserEffect
 import com.prongbang.mvi.user.domain.UserIntent
 import com.prongbang.mvi.user.domain.UserState
 import com.prongbang.mvi.user.presentation.list.UserAdapter
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.InternalCoroutinesApi
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-@ExperimentalCoroutinesApi
-@InternalCoroutinesApi
 class UserActivity : AppCompatActivity(), FlowViewRenderer<UserState, UserEffect> {
 
 	private val userViewModel: UserViewModel by viewModel()

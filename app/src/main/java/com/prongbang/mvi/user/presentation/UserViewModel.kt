@@ -7,13 +7,8 @@ import com.prongbang.mvi.user.domain.UserEffect
 import com.prongbang.mvi.user.domain.UserIntent
 import com.prongbang.mvi.user.domain.UserState
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.launch
 
-@ExperimentalCoroutinesApi
-@InternalCoroutinesApi
 class UserViewModel(
 		private val userRepository: UserRepository
 ) : FlowViewModel<UserIntent, UserState, UserEffect>() {
